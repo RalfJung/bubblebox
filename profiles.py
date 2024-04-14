@@ -13,23 +13,37 @@ DEFAULT = collect_flags(
   # merged-usr symlinks
   bwrap_flags("--symlink", "usr/lib", "/lib", "--symlink", "usr/lib64", "/lib64", "--symlink", "usr/bin", "/bin", "--symlink", "usr/sbin", "/sbin"),
   # folders we always need access to
-  ro_host_access("/usr", "/sys", "/etc"),
+  host_access({ ("/usr", "/sys", "/etc"): Access.Read }),
   # make a basic shell work
-  ro_host_access(*globexpand(HOME, [".bashrc", ".bash_aliases", ".profile", "bin"])),
+  home_access({
+    (".bashrc", ".bash_aliases", ".profile"): Access.Read,
+    "bin": Access.Read,
+  }),
 )
 
 # https://github.com/igo95862/bubblejail is a good source of paths that need allowing.
 # We do not give access to pipewire, that needs a portal (https://docs.pipewire.org/page_portal.html).
 DESKTOP = collect_flags(
   # Access to screen and audio
-  dev_host_access("/dev/dri", "/dev/snd"),
-  ro_host_access("/tmp/.X11-unix/", os.environ["XAUTHORITY"]),
-  ro_host_access(*globexpand(XDG_RUNTIME_DIR, ["wayland*", "pulse"])),
-  # Access to some key global configuration
-  ro_host_access(*globexpand(HOME, [".config/fontconfig", ".XCompose"])),
+  host_access({
+    "dev": {
+      ("dri", "snd"): Access.Device,
+    },
+    "/tmp/.X11-unix/": Access.Read,
+    os.environ["XAUTHORITY"]: Access.Read,
+    XDG_RUNTIME_DIR: {
+      ("wayland*", "pulse"): Access.Read,
+    },
+  }),
+  # Access to some key user configuration
+  home_access({
+    (".config/fontconfig", ".XCompose"): Access.Read,
+  }),
   # Access to basic d-bus services (that are hopefully safe to expose...)
   dbus_proxy_flags("--talk=org.kde.StatusNotifierWatcher.*", "--talk=org.freedesktop.Notifications.*", "--talk=org.freedesktop.ScreenSaver.*", "--talk=org.freedesktop.portal.*"),
   # Make it possible to open websites in Firefox
-  ro_host_access(*globexpand(HOME, [".mozilla/firefox/profiles.ini", ".local/share/applications"])),
+  home_access({
+    (".mozilla/firefox/profiles.ini", ".local/share/applications"): Access.Read,
+  }),
   dbus_proxy_flags("--talk=org.mozilla.firefox.*"),
 )

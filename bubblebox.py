@@ -16,9 +16,6 @@ def flat_map(f, xs):
             ys.extend(x_mapped)
     return ys
 
-def globexpand(base, names):
-    return flat_map(lambda x: glob.glob(base + "/" + x), names)
-
 def randname():
     # choose from all lowercase letter
     letters = string.ascii_lowercase
@@ -73,19 +70,57 @@ def bubblebox(*flags):
     #pprint(args)
     os.execvp(args[0], args)
 
-# Convenient methods to give access to the host file system
-def ro_host_access(*names):
-    return bwrap_flags(*flat_map(lambda x: ["--ro-bind", x, x], names))
-def rw_host_access(*names):
-    return bwrap_flags(*flat_map(lambda x: ["--bind", x, x], names))
-def dev_host_access(*names):
-    return bwrap_flags(*flat_map(lambda x: ["--dev-bind", x, x], names))
-
 # Give all instances of the same box a shared XDG_RUNTIME_DIR
 def shared_runtime_dir(boxname):
     dirname = BUBBLEBOX_DIR + "/" + boxname
     os.makedirs(dirname, exist_ok=True)
     return bwrap_flags("--bind", dirname, XDG_RUNTIME_DIR)
+
+# Convenient way to declare host access
+class Access:
+    Read = 0
+    Write = 1
+    Device = 2
+
+    def flag(val):
+        if val == Access.Read:
+            return "--ro-bind"
+        elif val == Access.Write:
+            return "--bind"
+        elif val == Access.Device:
+            return "--dev-bind"
+        else:
+            raise Exception(f"invalid access value: {val}")
+def host_access(dirs):
+    def expand(root, names):
+        """`names` is one or more strings that can contain globs. Expand them all relative to `root`."""
+        if isinstance(names, str):
+            names = (names,)
+        assert isinstance(names, tuple)
+        for name in names:
+            assert not (name.startswith("../") or name.__contains__("/../") or name.endswith("../"))
+            path = root + "/" + name
+            # prettification
+            path = path.replace("//", "/")
+            path = path.removesuffix("/.")
+            # glob expansion
+            yield from glob.glob(path)
+    def recursive_host_access(root, dirs, out):
+        for names, desc in dirs.items():
+            for path in expand(root, names):
+                if isinstance(desc, dict):
+                    # Recurse into children
+                    recursive_host_access(path, desc, out)
+                else:
+                    # Allow access to this path
+                    out.extend([Access.flag(desc), path, path])
+    # Start the recursive traversal
+    out = []
+    recursive_host_access("", dirs, out)
+    #pprint(out)
+    return bwrap_flags(*out)
+def home_access(dirs):
+    return host_access({ HOME: dirs })
 
 # Profile the profiles when importing bubblebox.
 import profiles
