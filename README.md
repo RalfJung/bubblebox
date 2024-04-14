@@ -62,7 +62,7 @@ The `profiles.py` file contains some useful directives that are needed by most a
   extends `DEFAULT` by providing access to DRI, X11, ALSA, Wayland, and
   PulseAudio. Furthermore, some GUI configuration files (`.XCompose`,
   fontconfig, and default mime-type associations) are made available to the
-  sandbox. The `name` is used to create an XDG_RUNTIME_DIR that will be shared
+  sandbox. The `"name"` is used to create an XDG_RUNTIME_DIR that will be shared
   among all instances of this sandbox. This also sets up the D-Bus proxy and
   gives the application access to notifications, screen saver control, status
   icons, and the flatpak portals (however, actually using these portals is
@@ -79,7 +79,7 @@ own sandboxes. Here are the key directives to use:
   to the home directory.
 - `bwrap_flags` allows passing flags directly to `bwrap`. This is rarely needed.
 - `dbus_proxy_flags` allows passing flags directly to `xdg-dbus-proxy`.
-  This is the typical way to provide access to given D-Bus names.
+  This is the typical way to provide access to additional D-Bus names.
 
 ## Source, License
 
