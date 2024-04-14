@@ -61,7 +61,11 @@ def collect_flags(*flags):
 
 # Run the application in the bubblebox with the given flags.
 def bubblebox(*flags):
-    flags = collect_flags(*flags)
+    if len(sys.argv) <= 1:
+        print(f"USAGE: {sys.argv[0]} <program name> <program arguments>")
+        sys.exit(1)
+    # Make sure `--die-with-parent` is always set.
+    flags = collect_flags(bwrap_flags("--die-with-parent"), *flags)
     bwrap = "/usr/bin/bwrap"
     extraflags = []
     if flags.dbus_proxy_flags:

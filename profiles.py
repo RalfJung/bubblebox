@@ -2,10 +2,8 @@ from bubblebox import *
 
 # Various default sandbox settings
 DEFAULT = collect_flags(
-  # general flags
-  bwrap_flags("--die-with-parent"),
   # namespace unsharing
-  bwrap_flags("--unshare-all", "--share-net", "--hostname", "bwrapped"),
+  bwrap_flags("--unshare-all", "--share-net", "--hostname", "bubblebox"),
   # basic directories
   bwrap_flags("--proc", "/proc", "--dev", "/dev", "--dir", "/tmp", "--dir", "/var", "--dir", "/run", "--symlink", "../run", "/var/run"),
   # an empty XDG_RUNTIME_DIR
@@ -37,13 +35,11 @@ DESKTOP = collect_flags(
   }),
   # Access to some key user configuration
   home_access({
-    (".config/fontconfig", ".XCompose"): Access.Read,
+    (".config/fontconfig", ".XCompose", ".local/share/applications"): Access.Read,
   }),
   # Access to basic d-bus services (that are hopefully safe to expose...)
   dbus_proxy_flags("--talk=org.kde.StatusNotifierWatcher.*", "--talk=org.freedesktop.Notifications.*", "--talk=org.freedesktop.ScreenSaver.*", "--talk=org.freedesktop.portal.*"),
   # Make it possible to open websites in Firefox
-  home_access({
-    (".mozilla/firefox/profiles.ini", ".local/share/applications"): Access.Read,
-  }),
+  home_access({ ".mozilla/firefox/profiles.ini": Access.Read }),
   dbus_proxy_flags("--talk=org.mozilla.firefox.*"),
 )
