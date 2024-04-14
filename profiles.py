@@ -3,7 +3,11 @@ from bubblebox import *
 # Various default sandbox settings
 DEFAULT = collect_flags(
   # namespace unsharing
-  bwrap_flags("--unshare-all", "--share-net", "--hostname", "bubblebox"),
+  # cannot unshare IPC as that breaks some wine applications
+  bwrap_flags("--unshare-user", "--unshare-pid", "--unshare-cgroup"),
+  # A different hostname is useful to be able to see when we are inside the sandbox.
+  # However, some applications will not like this unless the hostname also exists in `/etc/hosts`!
+  bwrap_flags("--unshare-uts", "--hostname", "bubblebox"),
   # basic directories
   bwrap_flags("--proc", "/proc", "--dev", "/dev", "--dir", "/tmp", "--dir", "/var", "--dir", "/run", "--symlink", "../run", "/var/run"),
   # an empty XDG_RUNTIME_DIR
