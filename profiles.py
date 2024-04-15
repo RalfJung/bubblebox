@@ -1,7 +1,7 @@
 from bubblebox import *
 
 # Various default sandbox settings
-DEFAULT = collect_flags(
+DEFAULT = group(
   # namespace unsharing
   # cannot unshare IPC as that breaks some wine applications
   bwrap_flags("--unshare-user", "--unshare-pid", "--unshare-cgroup"),
@@ -28,7 +28,7 @@ DEFAULT = collect_flags(
 # https://github.com/igo95862/bubblejail is a good source of paths that need allowing.
 # We do not give access to pipewire, that needs a portal (https://docs.pipewire.org/page_portal.html).
 def DESKTOP(name):
-  return collect_flags(
+  return group(
     DEFAULT,
     # Share XDG_RUNTIME_DIR among all instances of this sandbox
     shared_runtime_dir(name),
