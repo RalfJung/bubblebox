@@ -8,6 +8,8 @@ DEFAULT = collect_flags(
   # A different hostname is useful to be able to see when we are inside the sandbox.
   # However, some applications will not like this unless the hostname also exists in `/etc/hosts`!
   bwrap_flags("--unshare-uts", "--hostname", "bubblebox"),
+  # Make sure the sandbox cannot inject commands into the host terminal.
+  bwrap_flags("--new-session"),
   # basic directories
   bwrap_flags("--proc", "/proc", "--dev", "/dev", "--dir", "/tmp", "--dir", "/var", "--dir", "/run", "--symlink", "../run", "/var/run"),
   # an empty XDG_RUNTIME_DIR
