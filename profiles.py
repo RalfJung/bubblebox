@@ -9,6 +9,11 @@ DEFAULT = group(
   # However, some applications will not like this unless the hostname also exists in `/etc/hosts`!
   bwrap_flags("--unshare-uts", "--hostname", "bubblebox"),
   # Make sure the sandbox cannot inject commands into the host terminal.
+  # TODO: This flag breaks some CLI applications, like job control in shells.
+  # Consider using SECCOMP instead.
+  # Possible code to use for that: <https://gist.github.com/sloonz/4b7f5f575a96b6fe338534dbc2480a5d#file-sandbox-py-L129>
+  # There is also a good list of possible-syscalls-to-block at
+  # <https://github.com/flatpak/flatpak/blob/f16e064fd9454fb8f754b769ad1ffce0e42b51db/common/flatpak-run.c#L1791>.
   bwrap_flags("--new-session"),
   # basic directories
   bwrap_flags("--proc", "/proc", "--dev", "/dev", "--dir", "/tmp", "--dir", "/var", "--dir", "/run", "--symlink", "../run", "/var/run"),
