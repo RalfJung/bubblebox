@@ -71,7 +71,7 @@ class DbusProxyDirective:
         os.set_inheritable(bwrap_end, True)
         # Put this at the usual location for the bus insode the sandbox.
         # TODO: What if DBUS_SESSION_BUS_ADDRESS says something else?
-        bwrap.flags.extend(["--bind", filename, XDG_RUNTIME_DIR + "/bus", "--sync-fd", str(bwrap_end)])
+        bwrap.flags.extend(("--bind", filename, XDG_RUNTIME_DIR + "/bus", "--sync-fd", str(bwrap_end)))
 
 # Constructors that should be used instead of directly mentioning the class above.
 def bwrap_flags(*flags):
@@ -141,7 +141,7 @@ def host_access(dirs):
                     recursive_host_access(path, desc, out)
                 else:
                     # Allow access to this path
-                    out.extend([Access.flag(desc), path, path])
+                    out.extend((Access.flag(desc), path, path))
     # Start the recursive traversal
     out = []
     recursive_host_access("", dirs, out)
