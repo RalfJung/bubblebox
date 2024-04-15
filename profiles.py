@@ -42,10 +42,12 @@ def DESKTOP(name):
       "dev": {
         ("dri", "snd"): Access.Device,
       },
-      "/tmp/.X11-unix/": Access.Read,
+      "/tmp/.X11-unix/": {
+        "X"+os.environ["DISPLAY"].removeprefix(":"): Access.Read,
+      },
       os.environ["XAUTHORITY"]: Access.Read,
       XDG_RUNTIME_DIR: {
-        ("wayland*", "pulse"): Access.Read,
+        (os.environ["WAYLAND_DISPLAY"], "pulse"): Access.Read,
       },
     }),
     # Access to some key user configuration
