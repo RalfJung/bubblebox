@@ -30,6 +30,15 @@ DEFAULT = group(
   }),
 )
 
+def X11():
+  display = os.environ["DISPLAY"].removeprefix(":").split('.')[0]
+  return host_access({
+      "/tmp/.X11-unix/": {
+        "X"+display: Access.Read,
+      },
+      os.environ["XAUTHORITY"]: Access.Read,
+  })
+
 # https://github.com/igo95862/bubblejail is a good source of paths that need allowing.
 # We do not give access to pipewire, that needs a portal (https://docs.pipewire.org/page_portal.html).
 def DESKTOP(name):
@@ -37,19 +46,16 @@ def DESKTOP(name):
     DEFAULT,
     # Share XDG_RUNTIME_DIR among all instances of this sandbox
     shared_runtime_dir(name),
-    # Access to screen and audio
+    # Access to display servers, hardware acceleration, and audio
     host_access({
       "dev": {
         ("dri", "snd"): Access.Device,
       },
-      "/tmp/.X11-unix/": {
-        "X"+os.environ["DISPLAY"].removeprefix(":"): Access.Read,
-      },
-      os.environ["XAUTHORITY"]: Access.Read,
       XDG_RUNTIME_DIR: {
         (os.environ["WAYLAND_DISPLAY"], "pulse"): Access.Read,
       },
     }),
+    X11(),
     # Access to some key user configuration
     home_access({
       (".config/fontconfig", ".XCompose", ".local/share/applications"): Access.Read,
