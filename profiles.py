@@ -39,7 +39,7 @@ def X11():
       os.environ["XAUTHORITY"]: Access.Read,
   })
 
-# https://github.com/igo95862/bubblejail is a good source of paths that need allowing.
+# https://github.com/igo95862/bubblejail/blob/master/src/bubblejail/services.py is a good source of paths that need allowing.
 # We do not give access to pipewire, that needs a portal (https://docs.pipewire.org/page_portal.html).
 def DESKTOP(name):
   return group(
@@ -61,8 +61,14 @@ def DESKTOP(name):
       (".config/fontconfig", ".XCompose", ".local/share/applications"): Access.Read,
     }),
     # Access to basic d-bus services (that are hopefully safe to expose...)
-    dbus_proxy_flags("--talk=org.kde.StatusNotifierWatcher.*", "--talk=org.freedesktop.Notifications.*", "--talk=org.freedesktop.ScreenSaver.*", "--talk=org.freedesktop.portal.*"),
+    dbus_proxy_flags(
+      "--call=org.kde.StatusNotifierWatcher=@/StatusNotifierWatcher",
+      "--call=org.freedesktop.Notifications=@/org/freedesktop/Notifications",
+      "--call=org.freedesktop.ScreenSaver=@/org/freedesktop/ScreenSaver",
+      "--call=org.freedesktop.ScreenSaver=@/ScreenSaver",
+      "--talk=org.freedesktop.portal.*",
+    ),
     # Make it possible to open websites in Firefox
     home_access({ ".mozilla/firefox/profiles.ini": Access.Read }),
-    dbus_proxy_flags("--talk=org.mozilla.firefox.*"),
+    dbus_proxy_flags("--call=org.mozilla.firefox.*=@/org/mozilla/firefox/Remote"),
   )
