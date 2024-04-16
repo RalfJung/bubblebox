@@ -53,12 +53,19 @@ class DbusProxyDirective:
         bwrap.dbus_proxy_flags.extend(self.dbus_proxy_flags)
     def launch_dbus_proxy(bwrap):
         """Finalizer that launches a d-bus proxy with the flags accumulated in `bwrap`."""
+        # For the system bus, we assume it to be at a fixed location and provide it to the sandbox at that same location.
+        # For the session bus, we tell the proxy to talk to DBUS_SESSION_BUS_ADDRESS on the host, but we always put it
+        # at `$XDG_RUNTIME_DIR/bus` in the sandbox.
+        session_bus = XDG_RUNTIME_DIR + "/bus" # how the sandbox will see the bus
+        system_bus = "/run/dbus/system_bus_socket"
+        session_bus_proxy = BUBBLEBOX_DIR + "/bus-" + randname()
+        system_bus_proxy = BUBBLEBOX_DIR + "/bus-system-" + randname()
         # Prepare a pipe to coordinate shutdown of bwrap and the proxy
         bwrap_end, other_end = os.pipe() # both FDs are "non-inheritable" now
         # Invoke the debus-proxy
-        filename = BUBBLEBOX_DIR + "/bus-" + randname()
         args = ["/usr/bin/xdg-dbus-proxy", "--fd="+str(other_end)]
-        args += [os.environ["DBUS_SESSION_BUS_ADDRESS"], filename, "--filter"] + bwrap.dbus_proxy_flags
+        args += ["unix:path="+system_bus, system_bus_proxy, "--filter"] # just block everything for the system bus
+        args += [os.environ["DBUS_SESSION_BUS_ADDRESS"], session_bus_proxy, "--filter"] + bwrap.dbus_proxy_flags
         #pprint(args)
         subprocess.Popen(
             args,
@@ -66,12 +73,17 @@ class DbusProxyDirective:
         )
         # Wait until the proxy is ready
         os.read(bwrap_end, 1)
-        assert os.path.exists(filename)
+        assert os.path.exists(session_bus_proxy)
         # Make sure bwrap can access the other end of the pipe
         os.set_inheritable(bwrap_end, True)
         # Put this at the usual location for the bus insode the sandbox.
         # TODO: What if DBUS_SESSION_BUS_ADDRESS says something else?
-        bwrap.flags.extend(("--bind", filename, XDG_RUNTIME_DIR + "/bus", "--sync-fd", str(bwrap_end)))
+        bwrap.flags.extend((
+            "--setenv", "DBUS_SESSION_BUS_ADDRESS", "unix:path="+session_bus,
+            "--bind", session_bus_proxy, session_bus,
+            "--bind", system_bus_proxy, system_bus,
+            "--sync-fd", str(bwrap_end),
+        ))
 
 # Constructors that should be used instead of directly mentioning the class above.
 def bwrap_flags(*flags):
