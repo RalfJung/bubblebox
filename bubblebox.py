@@ -144,7 +144,10 @@ def host_access(dirs):
             path = path.replace("//", "/")
             path = path.removesuffix("/.")
             # glob expansion
-            yield from glob.glob(path)
+            globbed = glob.glob(path)
+            if len(globbed) == 0:
+                raise Exception(f"Path does not exist: {path}")
+            yield from globbed
     def recursive_host_access(root, dirs, out):
         for names, desc in dirs.items():
             for path in expand(root, names):
