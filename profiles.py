@@ -56,10 +56,13 @@ def DESKTOP(name):
       },
     }),
     X11(),
-    # Access to some key user configuration
+    # Access to some key user configuration.
+    # We set GSETTINGS_BACKEND to make GTK3 apps use the config file in ~/.config/glib-2.0.
+    # (The "right" solution here is probably the settings portal...)
     home_access({
-      (".config/fontconfig", ".XCompose", ".local/share/applications"): Access.Read,
+      (".config/fontconfig", ".config/glib-2.0", ".XCompose", ".local/share/applications"): Access.Read,
     }),
+    bwrap_flags("--setenv", "GSETTINGS_BACKEND", "keyfile"),
     # Access to basic d-bus services (that are hopefully safe to expose...)
     dbus_proxy_flags(
       "--call=org.kde.StatusNotifierWatcher=@/StatusNotifierWatcher",
