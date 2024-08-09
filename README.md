@@ -6,7 +6,7 @@ This is the documentation of [BubbleBox](https://www.ralfj.de/projects/bubblebox
 tool to easily sandbox Linux applications.
 
 The primary use-case for BubbleBox is running applications that you do not trust enough
-to give them full access to hour home directory, and in particular the secret keys stored there.
+to give them full access to your home directory, and in particular the secret keys stored there.
 BubbleBox is based on [bubblewrap] and [xdg-dbus-proxy] which do all of the heavy lifting.
 
 The goals of this project are similar to [firejail], but I found firejail's configuration to be extremely hard to maintain and debug.
