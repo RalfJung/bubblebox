@@ -7,7 +7,8 @@ DEFAULT = group(
   bwrap_flags("--unshare-user", "--unshare-pid", "--unshare-cgroup"),
   # A different hostname is useful to be able to see when we are inside the sandbox.
   # However, some applications will not like this unless the hostname also exists in `/etc/hosts`!
-  bwrap_flags("--unshare-uts", "--hostname", "bubblebox"),
+  # Also, gnome-shell doesn't display window icons properly when this is set.
+  #bwrap_flags("--unshare-uts", "--hostname", "bubblebox"),
   # Make sure the sandbox cannot inject commands into the host terminal.
   # TODO: This flag breaks some CLI applications, like job control in shells.
   # Consider using SECCOMP instead.
