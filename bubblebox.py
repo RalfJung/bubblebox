@@ -165,5 +165,8 @@ def host_access(dirs):
 def home_access(dirs):
     return host_access({ HOME: dirs })
 
+def home_symlink(dest, link):
+    return bwrap_flags("--symlink", HOME + dest, HOME + link)
+
 # Profile the profiles when importing bubblebox.
 import profiles
