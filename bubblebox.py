@@ -122,6 +122,13 @@ class Access:
     Write = 1
     Device = 2
 
+    def WriteTo(host_path):
+        '''Bind-mount a particular host path here (writable)'''
+        access = Access()
+        access.flag = "--bind"
+        access.host_path = host_path
+        return access
+
     def flag(val):
         if val == Access.Read:
             return "--ro-bind"
@@ -131,6 +138,7 @@ class Access:
             return "--dev-bind"
         else:
             raise Exception(f"invalid access value: {val}")
+
 def host_access(dirs):
     def expand(root, names):
         """`names` is one or more strings that can contain globs. Expand them all relative to `root`."""
@@ -155,8 +163,11 @@ def host_access(dirs):
                     # Recurse into children
                     recursive_host_access(path, desc, out)
                 else:
+                    assert isinstance(desc, Access) or isinstance(desc, int), f"unexpected access object: {desc}"
                     # Allow access to this path
-                    out.extend((Access.flag(desc), path, path))
+                    host_path = desc.host_path if isinstance(desc, Access) else path
+                    flag = desc.flag if isinstance(desc, Access) else Access.flag(desc)
+                    out.extend((flag, path, host_path))
     # Start the recursive traversal
     out = []
     recursive_host_access("", dirs, out)
